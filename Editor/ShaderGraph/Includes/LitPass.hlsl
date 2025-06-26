@@ -27,7 +27,7 @@ half4 frag(Varyings i) : SV_TARGET
 
     float shading = dot(GetMainLight().direction, i.normalWS);
     #ifdef LUB_SHADOWS_INCLUDED
-    shading = min(GetDirectionalShadowAttenuation(i.positionWS), shading);
+    shading = min(GetDirectionalShadowAttenuation(i), shading);
     #endif
     surfaceDescription.BaseColor *= shading;
 

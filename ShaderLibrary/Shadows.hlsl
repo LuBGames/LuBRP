@@ -10,6 +10,7 @@ CBUFFER_START(_CustomShadows)
     float _ShadowStrength;
     float _ShadowDistance;
     float2 _ShadowDistanceFade;
+    float _ShadowBias;
 CBUFFER_END
 
 float SampleDirectionalShadowAtlas (float3 positionSTS) {
@@ -22,13 +23,13 @@ float FadedShadowStrength (float distance, float scale, float fade) {
     return saturate((1.0 - distance * scale) * fade);
 }
 
-float GetDirectionalShadowAttenuation (float3 positionWS) {
+float GetDirectionalShadowAttenuation (Varyings v) {
     if (_ShadowStrength <= 0.0)
         return 1.0;
 
-    float depth = -TransformWorldToView(positionWS).z;
+    float depth = -TransformWorldToView(v.positionWS).z;
     
-    float3 positionSTS = mul(_DirectionalShadowMatrices, float4(positionWS, 1.0)).xyz;
+    float3 positionSTS = mul(_DirectionalShadowMatrices, float4(v.positionWS + v.normalWS * _ShadowBias, 1.0)).xyz;
     float shadow = SampleDirectionalShadowAtlas(positionSTS);
     float fade = FadedShadowStrength(depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
     return lerp(1.0, shadow, min(fade, _ShadowStrength));

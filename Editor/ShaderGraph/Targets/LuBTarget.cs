@@ -860,7 +860,7 @@ namespace LubRP.Editor.ShaderGraph.Targets
 
         public static readonly IncludeCollection Shadows = new IncludeCollection()
         {
-            { kShadows, IncludeLocation.Pregraph },
+            { kShadows, IncludeLocation.Graph },
         };
     }
         

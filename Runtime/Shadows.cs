@@ -11,7 +11,8 @@ namespace LubRP
             DirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices"),
             DirShadowStrengthId = Shader.PropertyToID("_ShadowStrength"),
             DirShadowDistanceId = Shader.PropertyToID("_ShadowDistance"),
-            DirShadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
+            DirShadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade"),
+            DirShadowBiasId = Shader.PropertyToID("_ShadowBias");
         
         private const string BufferName = "Shadows";
         
@@ -119,10 +120,11 @@ namespace LubRP
             {
                 _dirShadowMatrices = projectionMatrix * viewMatrix;
                 _cmd.SetGlobalFloat(DirShadowStrengthId, light.light.shadowStrength);
+                _cmd.SetGlobalFloat(DirShadowBiasId, light.light.shadowNormalBias);
+                _cmd.SetGlobalDepthBias(0f, light.light.shadowBias);
             }
             
             _cmd.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
-            _cmd.SetGlobalDepthBias(0f, 2f);
             ExecuteCommand();
             _context.DrawShadows(ref settings);
             _cmd.SetGlobalDepthBias(0f, 0f);
