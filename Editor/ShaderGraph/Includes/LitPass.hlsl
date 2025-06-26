@@ -7,7 +7,7 @@ Varyings vert(Attributes input)
     return output;
 }
 
-half4 frag(Varyings i) : SV_TARGET
+real4 frag(Varyings i) : SV_TARGET
 {
     SurfaceDescriptionInputs surfaceDescriptionInputs = BuildSurfaceDescriptionInputs(i);
     SurfaceDescription surfaceDescription = SurfaceDescriptionFunction(surfaceDescriptionInputs);
@@ -25,11 +25,18 @@ half4 frag(Varyings i) : SV_TARGET
     surfaceDescription.BaseColor *= alpha;
     #endif
 
-    float shading = dot(GetMainLight().direction, i.normalWS);
+    Light light = GetMainLight();
+    
+    real shading = saturate(dot(light.direction, i.normalWS));
     #ifdef LUB_SHADOWS_INCLUDED
     shading = min(GetDirectionalShadowAttenuation(i), shading);
     #endif
-    surfaceDescription.BaseColor *= shading;
+    real3 diffColor = shading * surfaceDescription.BaseColor * light.color;
 
-    return half4(surfaceDescription.BaseColor, alpha);
+    half3 sh = SampleSH(i.normalWS);
+    real3 ambientTerm = sh * surfaceDescription.BaseColor;
+
+    real3 finishColor = diffColor + ambientTerm;
+
+    return real4(finishColor, alpha);
 }
