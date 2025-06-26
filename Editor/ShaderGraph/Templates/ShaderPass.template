@@ -1,0 +1,40 @@
+Pass
+{
+    $splice(PassName)
+    Tags
+    {
+        $splice(LightMode)
+    }
+    
+    $splice(RenderState)
+    
+    HLSLPROGRAM
+    
+    $splice(PassPragmas)
+    
+    $splice(PassKeywords)
+    $splice(GraphKeywords)
+    
+    $splice(GraphDefines)
+    
+    $splice(PreGraphIncludes)
+    
+    $splice(PassStructs)
+    
+    $splice(GraphProperties)
+    
+    $splice(GraphIncludes)
+    
+    $splice(GraphFunctions)
+    
+    $splice(GraphVertex)
+    
+    $splice(GraphPixel)
+    
+    $features.graphVertex:  $include("BuildVertexDescriptionInputs.template.hlsl")
+    $features.graphPixel: $include("SharedCode.template.hlsl")
+    
+    $splice(PostGraphIncludes)
+    
+    ENDHLSL
+}
