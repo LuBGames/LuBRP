@@ -4,34 +4,23 @@ using UnityEditor.ShaderGraph;
 
 namespace LubRP.Editor.ShaderGraph.Targets
 {
-    class LuBUnlitSubTarget : LuBSubTarget
+    class LuBLitSubTarget : LuBSubTarget
     {
-        static readonly GUID kSourceCodeGuid = new GUID("90800f4ffc104fc7a067b21b18c5d45a"); // UniversalUnlitSubTarget.cs
-        
-        public LuBUnlitSubTarget()
-        {
-            displayName = "Unlit";
-        }
+        private static readonly GUID KSourceCodeGuid = new GUID("a1de9321d4ea491889eeb85e31114a74");
 
+        public LuBLitSubTarget()
+        {
+            displayName = "Lit";
+        }
+        
         public override bool IsActive() => true;
 
         public override void Setup(ref TargetSetupContext context)
         {
-            context.AddAssetDependency(kSourceCodeGuid, AssetCollection.Flags.SourceDependency);
+            context.AddAssetDependency(KSourceCodeGuid, AssetCollection.Flags.SourceDependency);
             base.Setup(ref context);
-
-//             var rpType = typeof(LubRenderPipelineAsset);
-//             if (!context.HasCustomEditorForRenderPipeline(rpType))
-//             {
-//                 var gui = typeof(ShaderGraphUnlitGUI);
-// #if HAS_VFX_GRAPH
-//                 if (TargetsVFX())
-//                     gui = typeof(VFXShaderGraphUnlitGUI);
-// #endif
-//                 context.AddCustomEditorForRenderPipeline(gui.FullName, rpType);
-//             }
-            // Process SubShaders
-            context.AddSubShader(PostProcessSubShader(SubShaders.Unlit(target, target.renderType, target.renderQueue)));
+            
+            context.AddSubShader(PostProcessSubShader(SubShaders.Lit(target, target.renderType, target.renderQueue)));
         }
 
         public override void GetActiveBlocks(ref TargetActiveBlockContext context)
@@ -40,15 +29,93 @@ namespace LubRP.Editor.ShaderGraph.Targets
             context.AddBlock(BlockFields.SurfaceDescription.AlphaClipThreshold, target.alphaClip || target.allowMaterialOverride);
         }
 
-        public override void GetPropertiesGUI(ref TargetPropertyGUIContext context, Action onChange, Action<string> registerUndo)
+        public override void GetPropertiesGUI(ref TargetPropertyGUIContext context, 
+            Action onChange, Action<string> registerUndo)
         {
             var universalTarget = target;
             universalTarget.AddDefaultMaterialOverrideGUI(ref context, onChange, registerUndo);
-            universalTarget.AddDefaultSurfacePropertiesGUI(ref context, onChange, registerUndo, showReceiveShadows: false);
+            universalTarget.AddDefaultSurfacePropertiesGUI(ref context, onChange, registerUndo, showReceiveShadows: true);
         }
         
+        #region SubShader
+        static class SubShaders
+        {
+            public static SubShaderDescriptor Lit(LuBTarget target, string renderType, string renderQueue)
+            {
+                var result = new SubShaderDescriptor()
+                {
+                    customTags = LuBTarget.kLitMaterialTypeTag,
+                    renderType = renderType,
+                    renderQueue = renderQueue,
+                    generatesPreview = true,
+                    passes = new PassCollection()
+                };
+
+                result.passes.Add(LitPasses.Forward(target, LitKeywords.Forward));
+
+                if (target.castShadows || target.allowMaterialOverride)
+                    result.passes.Add(SubShaderUtils.PassVariant(CorePasses.ShadowCaster(target), CorePragmas.Base));
+                
+                return result;
+            }
+        }
+        #endregion
+        
+        #region Pass
+        static class LitPasses
+        {
+            public static PassDescriptor Forward(LuBTarget target, KeywordCollection keywords)
+            {
+                var result = new PassDescriptor
+                {
+                    // Definition
+                    displayName = "LuB Forward",
+                    referenceName = "SHADERPASS_LIT",
+                    useInPreview = true,
+
+                    // Template
+                    passTemplatePath = LuBTarget.kUberTemplatePath,
+                    sharedTemplateDirectories = LuBTarget.kSharedTemplateDirectories,
+
+                    // Port Mask
+                    validVertexBlocks = CoreBlockMasks.Vertex,
+                    validPixelBlocks = CoreBlockMasks.FragmentSurface,
+
+                    // Fields
+                    structs = CoreStructCollections.Default,
+                    requiredFields = LitRequiredFields.Lit,
+                    fieldDependencies = CoreFieldDependencies.Default,
+
+                    // Conditional State
+                    renderStates = CoreRenderStates.UberSwitchedRenderState(target),
+                    pragmas = CorePragmas.Forward,
+                    defines = new DefineCollection {  },
+                    keywords = new KeywordCollection { keywords },
+                    includes = new IncludeCollection { LitIncludes.Lit },
+                };
+
+                CorePasses.AddShadowCastControlToPass(ref result, target);
+                CorePasses.AddTargetSurfaceControlsToPass(ref result, target);
+                CorePasses.AddAlphaToMaskControlToPass(ref result, target);
+
+                return result;
+            }
+        }
+        #endregion
+        
+        #region RequiredFields
+        static class LitRequiredFields
+        {
+            public static readonly FieldCollection Lit = new FieldCollection()
+            {
+                LuBStructs.LuBVaryings.positionWS,
+                LuBStructs.LuBVaryings.normalWS
+            };
+        }
+        #endregion
+        
         #region Keywords
-        static class UnlitKeywords
+        static class LitKeywords
         {
             public static readonly KeywordCollection Forward = new KeywordCollection()
             {
@@ -65,79 +132,12 @@ namespace LubRP.Editor.ShaderGraph.Targets
         }
         #endregion
         
-        #region SubShader
-        static class SubShaders
-        {
-            public static SubShaderDescriptor Unlit(LuBTarget target, string renderType, string renderQueue)
-            {
-                var result = new SubShaderDescriptor()
-                {
-                    customTags = LuBTarget.kUnlitMaterialTypeTag,
-                    renderType = renderType,
-                    renderQueue = renderQueue,
-                    generatesPreview = true,
-                    passes = new PassCollection()
-                };
-
-                result.passes.Add(UnlitPasses.Forward(target, UnlitKeywords.Forward));
-
-                if (target.castShadows || target.allowMaterialOverride)
-                    result.passes.Add(SubShaderUtils.PassVariant(CorePasses.ShadowCaster(target), CorePragmas.Base));
-                
-                return result;
-            }
-        }
-        #endregion
-        
-        #region Pass
-        static class UnlitPasses
-        {
-            public static PassDescriptor Forward(LuBTarget target, KeywordCollection keywords)
-            {
-                var result = new PassDescriptor
-                {
-                    // Definition
-                    displayName = "LuB Forward",
-                    referenceName = "SHADERPASS_UNLIT",
-                    useInPreview = true,
-
-                    // Template
-                    passTemplatePath = LuBTarget.kUberTemplatePath,
-                    sharedTemplateDirectories = LuBTarget.kSharedTemplateDirectories,
-
-                    // Port Mask
-                    validVertexBlocks = CoreBlockMasks.Vertex,
-                    validPixelBlocks = CoreBlockMasks.FragmentColorAlpha,
-
-                    // Fields
-                    structs = CoreStructCollections.Default,
-                    fieldDependencies = CoreFieldDependencies.Default,
-
-                    // Conditional State
-                    renderStates = CoreRenderStates.UberSwitchedRenderState(target),
-                    pragmas = CorePragmas.Forward,
-                    defines = new DefineCollection {  },
-                    keywords = new KeywordCollection { keywords },
-                    includes = new IncludeCollection { UnlitIncludes.Unlit },
-
-                    // Custom Interpolator Support
-                    //customInterpolators = CoreCustomInterpDescriptors.Common
-                };
-
-                CorePasses.AddTargetSurfaceControlsToPass(ref result, target);
-                CorePasses.AddAlphaToMaskControlToPass(ref result, target);
-
-                return result;
-            }
-        }
-        #endregion
-        
         #region Includes
-        static class UnlitIncludes
+        static class LitIncludes
         {
-            private const string kUnlitPass = "Packages/com.lub.rp/Editor/ShaderGraph/Includes/UnlitPass.hlsl";
+            private const string kLitPass = "Packages/com.lub.rp/Editor/ShaderGraph/Includes/LitPass.hlsl";
 
-            public static IncludeCollection Unlit = new IncludeCollection
+            public static IncludeCollection Lit = new IncludeCollection
             {
                 // Pre-graph
                 // { CoreIncludes.WriteRenderLayersPregraph },
@@ -146,7 +146,7 @@ namespace LubRP.Editor.ShaderGraph.Targets
 
                 // Post-graph
                 { CoreIncludes.CorePostgraph },
-                { kUnlitPass, IncludeLocation.Postgraph },
+                { kLitPass, IncludeLocation.Postgraph },
             };
         }
         #endregion

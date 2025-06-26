@@ -5,7 +5,8 @@ namespace LubRP
     [System.Serializable]
     public class ShadowSettings
     {
-        [Min(0f)] public float maxDistance = 100f;
+        [Min(0.001f)] public float maxDistance = 100f;
+        [Min(0.001f)] public float distanceFade = 0.1f;
         
         public Directional directional = new Directional()
         {

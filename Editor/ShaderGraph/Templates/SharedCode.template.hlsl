@@ -2,7 +2,7 @@ Varyings PackVaryings(Attributes attributes, VertexDescription desc)
 {
     Varyings output;
     output.positionCS = TransformObjectToHClip(desc.Position);
-    
+    $Varyings.positionWS: output.positionWS = TransformObjectToWorld(desc.Position);
     $Varyings.normalWS: output.normalWS = TransformObjectToWorldNormal(desc.Normal);
     $Varyings.texCoord0: output.texCoord0 = attributes.uv0;
     return output;

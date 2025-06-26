@@ -14,10 +14,10 @@ namespace LubRP.Editor.ShaderGraph
                 StructFields.Attributes.normalOS,
                 StructFields.Attributes.tangentOS,
                 StructFields.Attributes.uv0,
-                // StructFields.Attributes.uv1,
-                // StructFields.Attributes.uv2,
-                // StructFields.Attributes.uv3,
-                // StructFields.Attributes.color,
+                StructFields.Attributes.uv1,
+                StructFields.Attributes.uv2,
+                StructFields.Attributes.uv3,
+                StructFields.Attributes.color,
                 // StructFields.Attributes.instanceID,
                 // StructFields.Attributes.weights,
                 // StructFields.Attributes.indices,
@@ -29,19 +29,17 @@ namespace LubRP.Editor.ShaderGraph
         {
             name = "Varyings",
             packFields = false,
-            // populateWithCustomInterpolators = true,
             fields = new FieldDescriptor[]
             {
                 StructFields.Varyings.positionCS,
                 LuBVaryings.positionWS,
                 LuBVaryings.normalWS,
-                LuBVaryings.texCoord0,
                 // StructFields.Varyings.tangentWS,
-                // StructFields.Varyings.texCoord0,
-                StructFields.Varyings.texCoord1,
-                StructFields.Varyings.texCoord2,
-                StructFields.Varyings.texCoord3,
-                StructFields.Varyings.color,
+                LuBVaryings.texCoord0,
+                LuBVaryings.texCoord1,
+                LuBVaryings.texCoord2,
+                LuBVaryings.texCoord3,
+                LuBVaryings.color,
                 // StructFields.Varyings.screenPosition,
                 // UniversalStructFields.Varyings.staticLightmapUV,
                 // UniversalStructFields.Varyings.dynamicLightmapUV,
@@ -64,19 +62,27 @@ namespace LubRP.Editor.ShaderGraph
                 "NORMAL", subscriptOptions: StructFieldOptions.Optional);
             public static FieldDescriptor texCoord0 = new FieldDescriptor(Name, "texCoord0", "VARYINGS_NEED_TEXCOORD0", ShaderValueType.Float4,
                 "TEXCOORD0", subscriptOptions: StructFieldOptions.Optional);
+            public static FieldDescriptor texCoord1 = new FieldDescriptor(Name, "texCoord1", "VARYINGS_NEED_TEXCOORD1", ShaderValueType.Float4,
+                "TEXCOORD1", subscriptOptions: StructFieldOptions.Optional);
+            public static FieldDescriptor texCoord2 = new FieldDescriptor(Name, "texCoord2", "VARYINGS_NEED_TEXCOORD2", ShaderValueType.Float4,
+                "TEXCOORD2", subscriptOptions: StructFieldOptions.Optional);
+            public static FieldDescriptor texCoord3 = new FieldDescriptor(Name, "texCoord3", "VARYINGS_NEED_TEXCOORD3", ShaderValueType.Float4,
+                "TEXCOORD3", subscriptOptions: StructFieldOptions.Optional);
+            public static FieldDescriptor color = new FieldDescriptor(Varyings.name, "color", "VARYINGS_NEED_COLOR", ShaderValueType.Float4,
+                "COLOR", subscriptOptions: StructFieldOptions.Optional);
         }
         
         public static DependencyCollection DepVaryings = new DependencyCollection
         {
-            // /*new FieldDependency(StructFields.Varyings.positionWS,                                                   StructFields.Attributes.positionOS),
+            new FieldDependency(LuBVaryings.positionWS,                                                   StructFields.Attributes.positionOS),
             // new FieldDependency(StructFields.Varyings.positionPredisplacementWS,                                    StructFields.Attributes.positionOS),
             new FieldDependency(LuBVaryings.normalWS,                                                         StructFields.Attributes.normalOS),
             // new FieldDependency(StructFields.Varyings.tangentWS,                                                    StructFields.Attributes.tangentOS),
             new FieldDependency(LuBVaryings.texCoord0,                                                        StructFields.Attributes.uv0),
-            // new FieldDependency(StructFields.Varyings.texCoord1,                                                    StructFields.Attributes.uv1),
-            // new FieldDependency(StructFields.Varyings.texCoord2,                                                    StructFields.Attributes.uv2),
-            // new FieldDependency(StructFields.Varyings.texCoord3,                                                    StructFields.Attributes.uv3),
-            // new FieldDependency(StructFields.Varyings.color,                                                        StructFields.Attributes.color),
+            new FieldDependency(LuBVaryings.texCoord1,                                                    StructFields.Attributes.uv1),
+            new FieldDependency(LuBVaryings.texCoord2,                                                    StructFields.Attributes.uv2),
+            new FieldDependency(LuBVaryings.texCoord3,                                                    StructFields.Attributes.uv3),
+            // new FieldDependency(LuBVaryings.color,                                                        StructFields.Attributes.color),
             // new FieldDependency(StructFields.Varyings.instanceID,                                                   StructFields.Attributes.instanceID),
             // new FieldDependency(StructFields.Varyings.vertexID,                                                     StructFields.Attributes.vertexID),*/
         };
@@ -167,10 +173,10 @@ namespace LubRP.Editor.ShaderGraph
             new FieldDependency(StructFields.SurfaceDescriptionInputs.NDCPosition,                                  StructFields.SurfaceDescriptionInputs.PixelPosition),
 
             new FieldDependency(StructFields.SurfaceDescriptionInputs.uv0,                                          LuBVaryings.texCoord0),
-            new FieldDependency(StructFields.SurfaceDescriptionInputs.uv1,                                          StructFields.Varyings.texCoord1),
-            new FieldDependency(StructFields.SurfaceDescriptionInputs.uv2,                                          StructFields.Varyings.texCoord2),
-            new FieldDependency(StructFields.SurfaceDescriptionInputs.uv3,                                          StructFields.Varyings.texCoord3),
-            new FieldDependency(StructFields.SurfaceDescriptionInputs.VertexColor,                                  StructFields.Varyings.color),
+            new FieldDependency(StructFields.SurfaceDescriptionInputs.uv1,                                          LuBVaryings.texCoord1),
+            new FieldDependency(StructFields.SurfaceDescriptionInputs.uv2,                                          LuBVaryings.texCoord2),
+            new FieldDependency(StructFields.SurfaceDescriptionInputs.uv3,                                          LuBVaryings.texCoord3),
+            new FieldDependency(StructFields.SurfaceDescriptionInputs.VertexColor,                                  LuBVaryings.color),
             new FieldDependency(StructFields.SurfaceDescriptionInputs.FaceSign,                                     StructFields.Varyings.cullFace),
             new FieldDependency(StructFields.SurfaceDescriptionInputs.VertexID,                                     StructFields.Varyings.vertexID),
         };

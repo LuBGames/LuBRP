@@ -13,6 +13,7 @@ namespace LubRP
         public LuBRenderPipeline(ShadowSettings shadowSettings)
         {
             GraphicsSettings.useScriptableRenderPipelineBatching = true;
+            GraphicsSettings.lightsUseLinearIntensity = true;
             ShadowSettings = shadowSettings;
         }
         

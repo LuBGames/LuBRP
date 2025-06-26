@@ -75,6 +75,7 @@ namespace LubRP.Editor.ShaderGraph.Targets
         static readonly GUID kSourceCodeGuid = new GUID("c04155d868334baeb6f6a6dc09929563"); // LuBTarget.cs
         
         public const string kUnlitMaterialTypeTag = "\"LuBMaterialType\" = \"Unlit\"";
+        public const string kLitMaterialTypeTag = "\"LuBMaterialType\" = \"Lit\"";
         public const string kUberTemplatePath = "Packages/com.lub.rp/Editor/ShaderGraph/Templates/ShaderPass.template";
         public static readonly string[] kSharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories().Union(new string[]
         {
@@ -557,6 +558,13 @@ namespace LubRP.Editor.ShaderGraph.Targets
             else if (target.alphaClip)
                 pass.defines.Add(CoreKeywordDescriptors.AlphaTestOn, 1);
         }
+
+        internal static void AddShadowCastControlToPass(ref PassDescriptor pass, LuBTarget target)
+        {
+            if (!target.receiveShadows)
+                return;
+            pass.includes.Add(CoreIncludes.Shadows);
+        }
         
         internal static void AddTargetSurfaceControlsToPass(ref PassDescriptor pass, LuBTarget target, 
             bool blendModePreserveSpecular = false)
@@ -819,6 +827,7 @@ namespace LubRP.Editor.ShaderGraph.Targets
         const string kShaderPass = "Packages/com.unity.shadergraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/ShaderPass.hlsl";
         const string kLighting = "Packages/com.lub.rp/ShaderLibrary/Lighting.hlsl";
         const string kShadowCasterPass = "Packages/com.lub.rp/Editor/ShaderGraph/Includes/ShadowCasterPass.hlsl";
+        const string kShadows = "Packages/com.lub.rp/ShaderLibrary/Shadows.hlsl";
 
         public static readonly IncludeCollection CorePregraph = new IncludeCollection
         {
@@ -848,6 +857,11 @@ namespace LubRP.Editor.ShaderGraph.Targets
             { CorePostgraph },
             { kShadowCasterPass, IncludeLocation.Postgraph },
         };
+
+        public static readonly IncludeCollection Shadows = new IncludeCollection()
+        {
+            { kShadows, IncludeLocation.Pregraph },
+        };
     }
         
     #endregion
@@ -865,6 +879,14 @@ namespace LubRP.Editor.ShaderGraph.Targets
         public static readonly BlockFieldDescriptor[] FragmentColorAlpha = new BlockFieldDescriptor[]
         {
             BlockFields.SurfaceDescription.BaseColor,
+            BlockFields.SurfaceDescription.Alpha,
+            BlockFields.SurfaceDescription.AlphaClipThreshold,
+        };
+
+        public static readonly BlockFieldDescriptor[] FragmentSurface = new[]
+        {
+            BlockFields.SurfaceDescription.BaseColor,
+            // BlockFields.SurfaceDescription.NormalTS,
             BlockFields.SurfaceDescription.Alpha,
             BlockFields.SurfaceDescription.AlphaClipThreshold,
         };
