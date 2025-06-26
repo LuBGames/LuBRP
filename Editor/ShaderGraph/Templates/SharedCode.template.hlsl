@@ -83,5 +83,7 @@ SurfaceDescriptionInputs BuildSurfaceDescriptionInputs(Varyings input)
     $SurfaceDescriptionInputs.uv3:                                      output.uv3 = input.texCoord3;
     $SurfaceDescriptionInputs.VertexColor:                              output.VertexColor = input.color;
 
+    $SurfaceDescriptionInputs.TimeParameters:                           output.TimeParameters = _TimeParameters.xyz;
+
     return output;
 }

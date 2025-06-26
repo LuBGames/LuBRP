@@ -51,6 +51,7 @@ namespace LubRP
 
         private void Setup()
         {
+            LuBRPCore.SetShaderTimeValues(_cmd, Time.time, Time.deltaTime, Time.smoothDeltaTime);
             _context.SetupCameraProperties(_camera);
             CameraClearFlags clearFlags = _camera.clearFlags;
             _cmd.ClearRenderTarget(clearFlags <= CameraClearFlags.Depth, 
